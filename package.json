@@ -1,6 +1,6 @@
 {
   "name": "@irukaga/listener",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Reusable agent policies, skills, and AGENTS.md generation",
   "type": "module",
   "bin": {

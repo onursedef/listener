@@ -8,10 +8,10 @@ Listener is a Bun-powered CLI for installing, generating, and maintaining reusab
 
 Configure Codex, Claude Code, and other agents from one place without manually copying massive `AGENTS.md` or `CLAUDE.md` files between repositories.
 
-[![npm version](https://img.shields.io/npm/v/@sedef/listener?style=flat-square)](https://www.npmjs.com/package/@sedef/listener)
+[![npm version](https://img.shields.io/npm/v/@irukaga/listener?style=flat-square)](https://www.npmjs.com/package/@irukaga/listener)
 [![Bun](https://img.shields.io/badge/runtime-Bun-f9f1e1?style=flat-square\&logo=bun)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/language-TypeScript-3178c6?style=flat-square\&logo=typescript\&logoColor=white)](https://www.typescriptlang.org)
-[![License](https://img.shields.io/npm/l/@sedef/listener?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/npm/l/@irukaga/listener?style=flat-square)](LICENSE)
 
 </div>
 
@@ -97,7 +97,7 @@ bun --version
 Install Listener once and use it in any repository:
 
 ```bash
-bun add --global @sedef/listener
+bun add --global @irukaga/listener
 ```
 
 Verify that the executable is available:
@@ -112,7 +112,7 @@ listener --help
 Pin Listener to a specific version inside a repository:
 
 ```bash
-bun add --dev @sedef/listener
+bun add --dev @irukaga/listener
 ```
 
 Run it through `bunx`:
@@ -736,7 +736,7 @@ jobs:
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/onursedef/listener.git
+git clone https://github.com/onurirukaga/listener.git
 cd listener
 bun install
 ```
