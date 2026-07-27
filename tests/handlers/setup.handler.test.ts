@@ -3,6 +3,16 @@ import {
   expect,
   test,
 } from "bun:test";
+import {
+  mkdtemp,
+  readFile,
+} from "node:fs/promises";
+import {
+  tmpdir,
+} from "node:os";
+import {
+  join,
+} from "node:path";
 
 import {
   handleSetup,
@@ -164,10 +174,11 @@ describe("handleSetup", () => {
   });
 
   test("accepts modules with custom preset", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "listener-custom-"));
     const {
       context,
       logs,
-    } = createTestContext();
+    } = createTestContext(cwd);
 
     await handleSetup(
       context,
@@ -182,5 +193,77 @@ describe("handleSetup", () => {
     );
 
     expect(logs.info).toHaveLength(1);
+    expect(await readFile(
+      join(cwd, ".agents/skills/supervisor-loop/SKILL.md"),
+      "utf8",
+    )).toContain("name: supervisor-loop");
+    expect(await readFile(join(cwd, "AGENTS.md"), "utf8"))
+      .toContain("Mandatory enforcement");
+  });
+
+  test("minimal excludes full workflow modules", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "listener-minimal-"));
+
+    await handleSetup(
+      createTestContext(cwd).context,
+      createOptions({
+        scope: "project",
+        preset: "minimal",
+        yes: true,
+      }),
+    );
+
+    const agents = await readFile(join(cwd, "AGENTS.md"), "utf8");
+    expect(agents).toContain(".agents/rules/core.md");
+    expect(agents).not.toContain("red-team-review");
+  });
+
+  test("full writes rules, hooks, skills, and plugin policy", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "listener-full-"));
+
+    await handleSetup(
+      createTestContext(cwd).context,
+      createOptions({
+        scope: "project",
+        preset: "full",
+        integrations: ["gitnexus"],
+        yes: true,
+      }),
+    );
+
+    const agents = await readFile(join(cwd, "AGENTS.md"), "utf8");
+    expect(agents).toContain(".agents/rules/implementation.md");
+    expect(agents).toContain(".agents/hooks/pre-task.md");
+    expect(agents).toContain(".agents/skills/red-team-review/SKILL.md");
+    expect(agents).toContain(".agents/plugins/tool-plugins.md");
+    expect(agents).toContain("Do not use GitNexus unless user selected it");
+  });
+
+  test("dry run reports files without writing", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "listener-dry-"));
+    const { context, logs } = createTestContext(cwd);
+
+    await handleSetup(context, createOptions({
+      scope: "project",
+      preset: "full",
+      yes: true,
+      dryRun: true,
+    }));
+
+    const result = getLastInfoJson<{ generation: { files: string[] } }>(logs);
+    expect(result.generation.files.length).toBeGreaterThan(4);
+    expect(readFile(join(cwd, "AGENTS.md"), "utf8")).rejects.toThrow();
+  });
+
+  test("rejects unknown custom modules", async () => {
+    expect(handleSetup(
+      createTestContext().context,
+      createOptions({
+        scope: "project",
+        preset: "custom",
+        modules: ["missing-module"],
+        yes: true,
+      }),
+    )).rejects.toThrow("Unknown policy module: missing-module.");
   });
 });

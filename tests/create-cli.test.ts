@@ -2,6 +2,15 @@ import {
   CommanderError,
 } from "commander";
 import {
+  mkdtemp,
+} from "node:fs/promises";
+import {
+  tmpdir,
+} from "node:os";
+import {
+  join,
+} from "node:path";
+import {
   describe,
   expect,
   test,
@@ -80,10 +89,11 @@ describe("createCli", () => {
   });
 
   test("routes setup through the root CLI", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "listener-cli-"));
     const {
       context,
       logs,
-    } = createTestContext();
+    } = createTestContext(cwd);
 
     const program = createCli({
       version: "0.1.0",

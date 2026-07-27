@@ -3,6 +3,15 @@ import {
   expect,
   test,
 } from "bun:test";
+import {
+  mkdtemp,
+} from "node:fs/promises";
+import {
+  tmpdir,
+} from "node:os";
+import {
+  join,
+} from "node:path";
 
 import {
   main,
@@ -17,10 +26,11 @@ import {
 
 describe("main", () => {
   test("returns success for a valid command", async () => {
+    const cwd = await mkdtemp(join(tmpdir(), "listener-main-"));
     const {
       context,
       logs,
-    } = createTestContext();
+    } = createTestContext(cwd);
 
     const exitCode = await main({
       argv: [

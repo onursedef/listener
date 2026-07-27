@@ -4,6 +4,12 @@ import type {
 import {
   InvalidArgumentsError,
 } from "../core/errors.ts";
+import {
+  generateInstructions,
+} from "../core/instruction-generator.ts";
+import {
+  unknownPolicyModules,
+} from "../core/policy-catalog.ts";
 import type {
   AgentTarget,
   ConsumptionMode,
@@ -43,14 +49,26 @@ export async function handleSetup(
 
   validateSetupOptions(options);
 
+  const cwd = options.cwd ?? context.cwd;
+  const generation = options.preset === undefined || options.agents.length === 0
+    ? undefined
+    : await generateInstructions({
+      cwd,
+      agents: options.agents,
+      preset: options.preset,
+      modules: options.modules,
+      integrations: options.integrations,
+      dryRun: options.dryRun,
+      force: options.force,
+    });
+
   context.logger.info(
     JSON.stringify(
       {
         command: "setup",
-        cwd:
-          options.cwd ??
-          context.cwd,
+        cwd,
         options,
+        generation,
       },
       null,
       2,
@@ -76,6 +94,13 @@ function validateSetupOptions(
   ) {
     throw new InvalidArgumentsError(
       "--module can only be used with --preset custom.",
+    );
+  }
+
+  const unknownModules = unknownPolicyModules(options.modules);
+  if (unknownModules.length > 0) {
+    throw new InvalidArgumentsError(
+      `Unknown policy module: ${unknownModules.join(", ")}.`,
     );
   }
 
